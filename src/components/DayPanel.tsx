@@ -158,6 +158,7 @@ export function DayPanel({ date }: { date: string }) {
               {formatDuration(s.durationMin)}
               {setsDone(s) > 0 && `, ${setsDone(s)} séries`}
               {sessionVolume(s) > 0 && `, ${formatVolume(sessionVolume(s))} levantados`}
+              {s.cardio?.done && `, cardio de ${formatDuration(s.cardio.doneMin)}`}
             </p>
             <div className="mt-4 flex gap-2">
               <Link
@@ -199,6 +200,7 @@ export function DayPanel({ date }: { date: string }) {
                   .slice(0, 4)
                   .map((e) => e.name)
                   .join(", ")}${r.exercises.length > 4 ? ` e mais ${r.exercises.length - 4}` : ""}`}
+            {r.cardio && `${r.exercises.length === 0 ? "" : ", "}cardio de ${formatDuration(r.cardio.minutes)}`}
           </p>
 
           {isToday && (

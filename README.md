@@ -7,9 +7,9 @@ Por enquanto é só o front: tudo fica salvo no próprio aparelho (`localStorage
 ## O que ele faz
 
 - **Hoje**: mostra o treino do dia. Você pode começar o treino, marcar "Já fui" informando o tempo, ou "Hoje não vou". Resumo da semana (treinos, tempo, carga levantada) e sequência de treinos seguidos.
-- **Treino ao vivo**: cronômetro, e cada série com carga e repetições ajustadas por `−`/`+` (ou digitando). As séries já vêm preenchidas com o que você fez da última vez, então muitas vezes é só tocar no check. Timer de descanso (60s, 90s, 2min, 3min) que vibra no fim, e a tela fica acesa durante o treino.
+- **Treino ao vivo**: cronômetro, e cada série com carga e repetições ajustadas por `−`/`+` (ou digitando). As séries já vêm preenchidas com o que você fez da última vez, então muitas vezes é só tocar no check. Timer de descanso (60s, 90s, 2min, 3min) que vibra no fim, e a tela fica acesa durante o treino. Se o treino tem cardio, ele aparece depois dos exercícios com um temporizador regressivo (continua contando se você sair da tela).
 - **Calendário**: o mês inteiro com o que foi feito, o que faltou, o que está planejado e o que foi pulado. Tocando em um dia você vê o treino, confirma que foi (com o tempo), marca que não foi, ou abre o registro. Resumo do mês com a % do plano cumprido.
-- **Treinos**: monta o plano. Cada treino tem nome, dias da semana e exercícios (séries e repetições alvo, ordem editável). Tem modelos prontos: ABC, corpo inteiro e superior/inferior.
+- **Treinos**: a lista dos seus treinos em cima (cada um com uma cor) e a semana embaixo mostrando qual treino cai em cada dia. Cada treino tem nome, dias da semana, exercícios (séries e repetições alvo, ordem editável) e, se quiser, **Cardio** com a meta em minutos.
 - **Evolução**: treinos por semana, totais, e a curva de carga, 1RM estimado ou volume de cada exercício, com a melhor série.
 - **Registro**: qualquer treino pode ser reaberto depois pra editar tempo, séries, cargas e observações.
 - **Ajustes**: backup em arquivo `.json` (baixar e importar) e instruções de instalação.
@@ -58,7 +58,7 @@ src/
     store.ts        estado salvo no aparelho (zustand + localStorage)
     stats.ts        sequência, status dos dias, histórico e recordes
     dates.ts        datas e formatação em pt-BR
-    templates.ts    modelos de treino e sugestões de exercícios
+    catalog.ts      sugestões de nome de exercício
 public/
   sw.js           service worker (abre sem internet)
   icons/          ícones do app

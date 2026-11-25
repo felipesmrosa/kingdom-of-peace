@@ -2,10 +2,17 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { BackupFile, ExerciseLog, Routine, Session, SessionStatus, SetLog } from "./types";
+import type {
+  BackupFile,
+  CardioLog,
+  ExerciseLog,
+  Routine,
+  Session,
+  SessionStatus,
+  SetLog,
+} from "./types";
 import { todayKey } from "./dates";
 import { uid } from "./id";
-import { TEMPLATES } from "./templates";
 
 export const normName = (s: string) => s.trim().toLowerCase();
 
@@ -44,6 +51,12 @@ export function buildExercises(routine: Routine | null, sessions: Session[]): Ex
   });
 }
 
+/** Cardio do treino, ainda por fazer. `null` quando o treino não tem cardio. */
+export function buildCardio(routine: Routine | null): CardioLog | null {
+  if (!routine?.cardio) return null;
+  return { targetMin: routine.cardio.minutes, doneMin: 0, done: false, startedAt: null };
+}
+
 type State = {
   routines: Routine[];
   sessions: Session[];
@@ -51,7 +64,6 @@ type State = {
   addRoutine: (init?: Partial<Omit<Routine, "id">>) => string;
   updateRoutine: (id: string, fn: (r: Routine) => Routine) => void;
   deleteRoutine: (id: string) => void;
-  addTemplate: (templateId: string) => void;
 
   startSession: (routineId: string | null, date?: string) => string;
   updateSession: (id: string, fn: (s: Session) => Session) => void;
@@ -78,6 +90,7 @@ export const useStore = create<State>()(
           name: init?.name ?? "Novo treino",
           weekdays: init?.weekdays ?? [],
           exercises: init?.exercises ?? [],
+          cardio: init?.cardio ?? null,
         };
         set((s) => ({ routines: [...s.routines, routine] }));
         return id;
@@ -87,18 +100,6 @@ export const useStore = create<State>()(
         set((s) => ({ routines: s.routines.map((r) => (r.id === id ? fn(r) : r)) })),
 
       deleteRoutine: (id) => set((s) => ({ routines: s.routines.filter((r) => r.id !== id) })),
-
-      addTemplate: (templateId) => {
-        const tpl = TEMPLATES.find((t) => t.id === templateId);
-        if (!tpl) return;
-        const created: Routine[] = tpl.routines.map((r) => ({
-          id: uid(),
-          name: r.name,
-          weekdays: [...r.weekdays],
-          exercises: r.exercises.map((e) => ({ id: uid(), ...e })),
-        }));
-        set((s) => ({ routines: [...s.routines, ...created] }));
-      },
 
       startSession: (routineId, date = todayKey()) => {
         const existing = get().sessions.find((s) => s.status === "active");
@@ -114,6 +115,7 @@ export const useStore = create<State>()(
           endedAt: null,
           durationMin: 0,
           exercises: buildExercises(routine, get().sessions),
+          cardio: buildCardio(routine),
           notes: "",
         };
         set((s) => ({ sessions: [...s.sessions, session] }));
@@ -146,6 +148,7 @@ export const useStore = create<State>()(
           endedAt: Date.now(),
           durationMin: Math.max(1, Math.round(durationMin)),
           exercises: buildExercises(routine, get().sessions),
+          cardio: buildCardio(routine),
           notes: "",
         };
         set((s) => ({ sessions: [...s.sessions, session] }));
@@ -215,6 +218,7 @@ function sanitizeRoutine(x: unknown): Routine | null {
           reps: str(e.reps, "10"),
         }))
       : [],
+    cardio: isObj(x.cardio) ? { minutes: Math.max(1, Math.round(num(x.cardio.minutes, 30))) } : null,
   };
 }
 
@@ -231,6 +235,14 @@ function sanitizeSession(x: unknown): Session | null {
     startedAt: typeof x.startedAt === "number" ? x.startedAt : null,
     endedAt: typeof x.endedAt === "number" ? x.endedAt : null,
     durationMin: num(x.durationMin),
+    cardio: isObj(x.cardio)
+      ? {
+          targetMin: Math.max(1, Math.round(num(x.cardio.targetMin, 30))),
+          doneMin: Math.max(0, Math.round(num(x.cardio.doneMin))),
+          done: x.cardio.done === true,
+          startedAt: typeof x.cardio.startedAt === "number" ? x.cardio.startedAt : null,
+        }
+      : null,
     notes: str(x.notes),
     exercises: Array.isArray(x.exercises)
       ? x.exercises.filter(isObj).map((e) => ({

@@ -8,8 +8,9 @@ import { uid } from "@/lib/id";
 import { formatClock, formatVolume } from "@/lib/dates";
 import { sessionVolume, setsDone } from "@/lib/stats";
 import { useNow } from "@/lib/hooks";
-import type { ExerciseLog } from "@/lib/types";
+import type { CardioLog, ExerciseLog } from "@/lib/types";
 import { AddExerciseSheet } from "@/components/AddExerciseSheet";
+import { CardioCard, cardioRunning, finishCardio } from "@/components/CardioCard";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { IconChevronLeft, IconPlus } from "@/components/icons";
 import { Button, DurationField, Sheet } from "@/components/ui";
@@ -80,6 +81,8 @@ export default function SessaoPage() {
       exercises: s.exercises.map((e) => (e.id === next.id ? next : e)),
     }));
 
+  const changeCardio = (next: CardioLog) => updateSession(active.id, (s) => ({ ...s, cardio: next }));
+
   const removeExercise = (ex: ExerciseLog) => {
     if (ex.sets.some((x) => x.done) && !window.confirm(`Remover "${ex.name}" e as séries já marcadas?`)) return;
     updateSession(active.id, (s) => ({ ...s, exercises: s.exercises.filter((e) => e.id !== ex.id) }));
@@ -101,6 +104,10 @@ export default function SessaoPage() {
 
   const save = () => {
     leaving.current = true;
+    // Cardio ainda rodando: salva com o tempo que já passou.
+    if (cardioRunning(active.cardio)) {
+      updateSession(active.id, (s) => (s.cardio ? { ...s, cardio: finishCardio(s.cardio, Date.now()) } : s));
+    }
     finishSession(active.id, minutes, notes.trim());
     router.replace("/");
   };
@@ -176,6 +183,8 @@ export default function SessaoPage() {
           />
         ))}
 
+        {active.cardio && <CardioCard cardio={active.cardio} onChange={changeCardio} now={now} />}
+
         <Button onClick={() => setAddOpen(true)}>
           <IconPlus width={20} height={20} />
           Adicionar exercício
@@ -241,6 +250,13 @@ export default function SessaoPage() {
         {doneSets === 0 && (
           <p className="mb-4 rounded-2xl bg-saffron/25 p-3 text-sm">
             Você não marcou nenhuma série. Dá pra salvar mesmo assim, só conta como treino feito.
+          </p>
+        )}
+        {active.cardio && !active.cardio.done && (
+          <p className="mb-4 rounded-2xl bg-saffron/25 p-3 text-sm">
+            {cardioRunning(active.cardio)
+              ? "O cardio ainda está rodando. Ele será salvo com o tempo que já passou."
+              : "Você ainda não fez o cardio. Dá pra salvar mesmo assim, ou continuar treinando."}
           </p>
         )}
         <p className="mb-2 text-sm font-medium text-muted">Tempo de treino</p>

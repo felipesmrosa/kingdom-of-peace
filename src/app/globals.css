@@ -15,6 +15,7 @@
   --color-saffron: var(--saffron);
   --color-on-saffron: var(--on-saffron);
   --color-rose: var(--rose);
+  --color-on-rose: var(--on-rose);
 }
 
 :root {
@@ -31,6 +32,7 @@
   --saffron: #f2a93b;
   --on-saffron: #14213d;
   --rose: #c4495b;
+  --on-rose: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -48,6 +50,7 @@
     --saffron: #f5b94f;
     --on-saffron: #14213d;
     --rose: #e3707f;
+    --on-rose: #0f1626;
   }
 }
 

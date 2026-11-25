@@ -7,7 +7,9 @@ import { uid } from "@/lib/id";
 import type { Routine } from "@/lib/types";
 import { WEEKDAY_SHORT, WEEK_ORDER } from "@/lib/dates";
 import { IconArrowDown, IconArrowUp, IconPlus, IconTrash } from "@/components/icons";
-import { Button, LinkButton, PageHeader, Stepper } from "@/components/ui";
+import { Button, LinkButton, PageHeader, Stepper, Switch } from "@/components/ui";
+
+const CARDIO_QUICK = [15, 20, 30, 45, 60];
 
 export default function EditarTreinoPage() {
   const { id } = useParams<{ id: string }>();
@@ -197,6 +199,54 @@ export default function EditarTreinoPage() {
             <IconPlus width={20} height={20} />
             Adicionar exercício
           </Button>
+        </section>
+
+        <section className="rounded-3xl bg-surface p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold">Cardio</h2>
+              <p className="text-sm text-muted">
+                {routine.cardio
+                  ? "Entra no fim do treino, depois dos exercícios."
+                  : "Ative pra terminar esse treino com cardio."}
+              </p>
+            </div>
+            <Switch
+              label="Cardio"
+              checked={!!routine.cardio}
+              onChange={(on) => patch((r) => ({ ...r, cardio: on ? { minutes: r.cardio?.minutes ?? 30 } : null }))}
+            />
+          </div>
+
+          {routine.cardio && (
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-medium text-muted">Quantos minutos de cardio?</p>
+              <Stepper
+                tone="bg"
+                label="Minutos de cardio"
+                value={routine.cardio.minutes}
+                step={5}
+                min={1}
+                max={300}
+                onChange={(v) => patch((r) => ({ ...r, cardio: { minutes: Math.max(1, Math.round(v)) } }))}
+              />
+              <div className="mt-3 flex flex-wrap gap-2">
+                {CARDIO_QUICK.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    aria-pressed={routine.cardio?.minutes === q}
+                    onClick={() => patch((r) => ({ ...r, cardio: { minutes: q } }))}
+                    className={`num min-h-9 rounded-full px-3 text-sm font-semibold ${
+                      routine.cardio?.minutes === q ? "bg-ink text-bg" : "bg-surface-2 text-ink"
+                    }`}
+                  >
+                    {q}min
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         <p className="px-1 text-center text-sm text-muted">As mudanças são salvas sozinhas.</p>

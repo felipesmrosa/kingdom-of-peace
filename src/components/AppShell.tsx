@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { useHydrated } from "@/lib/hooks";
 import { knownExercises } from "@/lib/stats";
-import { EXERCISE_CATALOG } from "@/lib/templates";
+import { EXERCISE_CATALOG } from "@/lib/catalog";
 import { BottomNav } from "./BottomNav";
 
 export function AppShell({ children }: { children: ReactNode }) {

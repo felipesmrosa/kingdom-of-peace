@@ -8,6 +8,7 @@ import { formatDuration, formatVolume, longDate } from "@/lib/dates";
 import { sessionVolume, setsDone } from "@/lib/stats";
 import type { ExerciseLog } from "@/lib/types";
 import { AddExerciseSheet } from "@/components/AddExerciseSheet";
+import { CardioCard } from "@/components/CardioCard";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { IconPlus } from "@/components/icons";
 import { Button, DurationField, LinkButton, PageHeader } from "@/components/ui";
@@ -126,6 +127,13 @@ export default function RegistroPage() {
             }
           />
         ))}
+
+        {session.cardio && (
+          <CardioCard
+            cardio={session.cardio}
+            onChange={(next) => updateSession(id, (s) => ({ ...s, cardio: next }))}
+          />
+        )}
 
         <Button onClick={() => setAddOpen(true)}>
           <IconPlus width={20} height={20} />

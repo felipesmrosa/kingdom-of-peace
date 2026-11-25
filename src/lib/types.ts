@@ -6,6 +6,11 @@ export type PlannedExercise = {
   reps: string;
 };
 
+/** Cardio planejado no fim do treino (ex.: 30 min). */
+export type PlannedCardio = {
+  minutes: number;
+};
+
 /** Treino do plano (ex.: "Peito e tríceps"), repetido nos dias da semana escolhidos. */
 export type Routine = {
   id: string;
@@ -13,6 +18,19 @@ export type Routine = {
   /** 0 = domingo ... 6 = sábado */
   weekdays: number[];
   exercises: PlannedExercise[];
+  /** Quando existe, o treino termina com cardio. Treinos antigos não têm esse campo. */
+  cardio?: PlannedCardio | null;
+};
+
+/** Cardio de um treino registrado. */
+export type CardioLog = {
+  /** meta em minutos */
+  targetMin: number;
+  /** minutos que você realmente fez */
+  doneMin: number;
+  done: boolean;
+  /** quando o temporizador foi iniciado; `null` se não está rodando */
+  startedAt?: number | null;
 };
 
 export type SetLog = {
@@ -43,6 +61,8 @@ export type Session = {
   endedAt: number | null;
   durationMin: number;
   exercises: ExerciseLog[];
+  /** Presente só se o treino tem cardio. Registros antigos não têm esse campo. */
+  cardio?: CardioLog | null;
   notes: string;
 };
 
