@@ -61,11 +61,11 @@ export default function SessaoPage() {
     };
   }, []);
 
-  // Fim do descanso: vibra e some sozinho.
+  // Fim do descanso: vibra uma vez e some sozinho.
   const restDone = rest !== null && now >= rest.end;
   useEffect(() => {
     if (!restDone) return;
-    navigator.vibrate?.([250, 120, 250]);
+    navigator.vibrate?.(400);
     const t = setTimeout(() => setRest(null), 3500);
     return () => clearTimeout(t);
   }, [restDone]);
