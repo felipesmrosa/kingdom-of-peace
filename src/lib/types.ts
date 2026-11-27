@@ -2,8 +2,11 @@
 export type PlannedExercise = {
   id: string;
   name: string;
+  /** total de séries, contando as de aquecimento */
   sets: number;
   reps: string;
+  /** quantas das séries (as primeiras) são de aquecimento. Treinos antigos não têm esse campo. */
+  warmup?: number;
 };
 
 /** Cardio planejado no fim do treino (ex.: 30 min). */
@@ -39,6 +42,8 @@ export type SetLog = {
   weight: number;
   reps: number;
   done: boolean;
+  /** série de aquecimento: não entra em volume, recordes nem na contagem de séries */
+  warmup?: boolean;
 };
 
 export type ExerciseLog = {

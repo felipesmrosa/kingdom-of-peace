@@ -35,20 +35,38 @@ function firstNumber(reps: string): number {
   return m ? parseInt(m[0], 10) : 10;
 }
 
+/** Quantas séries de aquecimento valem de verdade: nunca todas, sempre sobra ao menos uma de trabalho. */
+export function warmupCount(sets: number, warmup: number | undefined): number {
+  return Math.min(Math.max(0, Math.round(warmup ?? 0)), Math.max(0, Math.round(sets) - 1));
+}
+
 /** Monta os exercícios de um treino já com a carga e as reps da última vez. */
 export function buildExercises(routine: Routine | null, sessions: Session[]): ExerciseLog[] {
   if (!routine) return [];
   return routine.exercises
     .filter((pe) => pe.name.trim())
     .map((pe) => {
-    const prev = lastSets(sessions, pe.name);
-    const count = Math.max(1, pe.sets);
-    const sets: SetLog[] = Array.from({ length: count }, (_, i) => {
-      const p = prev ? (prev[i] ?? prev[prev.length - 1]) : null;
-      return { id: uid(), weight: p?.weight ?? 0, reps: p?.reps ?? firstNumber(pe.reps), done: false };
+      const prev = lastSets(sessions, pe.name) ?? [];
+      // Aquecimento puxa do aquecimento da última vez; as séries de trabalho, das de trabalho.
+      const prevWarm = prev.filter((x) => x.warmup);
+      const prevWork = prev.filter((x) => !x.warmup);
+      const count = Math.max(1, pe.sets);
+      const warm = warmupCount(count, pe.warmup);
+      const sets: SetLog[] = Array.from({ length: count }, (_, i) => {
+        const isWarm = i < warm;
+        const p = isWarm
+          ? (prevWarm[i] ?? null)
+          : (prevWork[i - warm] ?? prevWork[prevWork.length - 1] ?? null);
+        return {
+          id: uid(),
+          weight: p?.weight ?? 0,
+          reps: p?.reps ?? firstNumber(pe.reps),
+          done: false,
+          ...(isWarm ? { warmup: true } : {}),
+        };
+      });
+      return { id: uid(), name: pe.name, sets };
     });
-    return { id: uid(), name: pe.name, sets };
-  });
 }
 
 /** Cardio do treino, ainda por fazer. `null` quando o treino não tem cardio. */
@@ -216,6 +234,7 @@ function sanitizeRoutine(x: unknown): Routine | null {
           name: str(e.name, "Exercício"),
           sets: Math.max(1, num(e.sets, 3)),
           reps: str(e.reps, "10"),
+          warmup: warmupCount(Math.max(1, num(e.sets, 3)), num(e.warmup)),
         }))
       : [],
     cardio: isObj(x.cardio) ? { minutes: Math.max(1, Math.round(num(x.cardio.minutes, 30))) } : null,
@@ -254,6 +273,7 @@ function sanitizeSession(x: unknown): Session | null {
                 weight: Math.max(0, num(st.weight)),
                 reps: Math.max(0, num(st.reps)),
                 done: st.done === true,
+                ...(st.warmup === true ? { warmup: true } : {}),
               }))
             : [],
         }))

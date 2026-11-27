@@ -91,7 +91,13 @@ export default function SessaoPage() {
   const addExercise = (name: string) => {
     const prev = lastSets(sessions, name, active.id);
     const sets = prev
-      ? prev.map((p) => ({ id: uid(), weight: p.weight, reps: p.reps, done: false }))
+      ? prev.map((p) => ({
+          id: uid(),
+          weight: p.weight,
+          reps: p.reps,
+          done: false,
+          ...(p.warmup ? { warmup: true } : {}),
+        }))
       : [{ id: uid(), weight: 0, reps: 10, done: false }];
     updateSession(active.id, (s) => ({ ...s, exercises: [...s.exercises, { id: uid(), name, sets }] }));
   };

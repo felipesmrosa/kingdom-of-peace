@@ -56,7 +56,13 @@ export default function RegistroPage() {
   const addExercise = (name: string) => {
     const prev = lastSets(sessions, name, id);
     const sets = prev
-      ? prev.map((p) => ({ id: uid(), weight: p.weight, reps: p.reps, done: false }))
+      ? prev.map((p) => ({
+          id: uid(),
+          weight: p.weight,
+          reps: p.reps,
+          done: false,
+          ...(p.warmup ? { warmup: true } : {}),
+        }))
       : [{ id: uid(), weight: 0, reps: 10, done: false }];
     updateSession(id, (s) => ({ ...s, exercises: [...s.exercises, { id: uid(), name, sets }] }));
   };

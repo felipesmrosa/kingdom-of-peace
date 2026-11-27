@@ -41,12 +41,15 @@ export function currentStreak(routines: Routine[], sessions: Session[], today = 
   return streak;
 }
 
+/** Séries feitas, sem contar as de aquecimento. */
 export const setsDone = (s: Session) =>
-  s.exercises.reduce((n, e) => n + e.sets.filter((x) => x.done).length, 0);
+  s.exercises.reduce((n, e) => n + e.sets.filter((x) => x.done && !x.warmup).length, 0);
 
+/** Carga total levantada (carga × repetições), sem contar o aquecimento. */
 export const sessionVolume = (s: Session) =>
   s.exercises.reduce(
-    (sum, e) => sum + e.sets.filter((x) => x.done).reduce((a, x) => a + x.weight * x.reps, 0),
+    (sum, e) =>
+      sum + e.sets.filter((x) => x.done && !x.warmup).reduce((a, x) => a + x.weight * x.reps, 0),
     0
   );
 
@@ -84,7 +87,7 @@ export function trainedExercises(sessions: Session[]): string[] {
     .sort((a, b) => b.date.localeCompare(a.date));
   for (const s of done) {
     for (const e of s.exercises) {
-      if (e.sets.some((x) => x.done)) {
+      if (e.sets.some((x) => x.done && !x.warmup)) {
         const k = normName(e.name);
         if (!seen.has(k)) seen.set(k, e.name.trim());
       }
@@ -110,7 +113,7 @@ export function exerciseHistory(sessions: Session[], name: string): ExercisePoin
     .sort((a, b) => a.date.localeCompare(b.date) || (a.endedAt ?? 0) - (b.endedAt ?? 0));
   for (const s of done) {
     const ex = s.exercises.find((e) => normName(e.name) === n);
-    const sets = ex?.sets.filter((x) => x.done) ?? [];
+    const sets = ex?.sets.filter((x) => x.done && !x.warmup) ?? [];
     if (sets.length === 0) continue;
     const top = sets.reduce((a, b) => (b.weight > a.weight || (b.weight === a.weight && b.reps > a.reps) ? b : a));
     points.push({

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
+import { useStore, warmupCount } from "@/lib/store";
 import { uid } from "@/lib/id";
 import type { Routine } from "@/lib/types";
 import { WEEKDAY_SHORT, WEEK_ORDER } from "@/lib/dates";
@@ -144,7 +144,10 @@ export default function EditarTreinoPage() {
                       onChange={(v) =>
                         patch((r) => ({
                           ...r,
-                          exercises: r.exercises.map((x) => (x.id === e.id ? { ...x, sets: v } : x)),
+                          // Se tirar séries, o aquecimento encolhe junto (sempre sobra ao menos 1 de trabalho).
+                          exercises: r.exercises.map((x) =>
+                            x.id === e.id ? { ...x, sets: v, warmup: warmupCount(v, x.warmup) } : x
+                          ),
                         }))
                       }
                     />
@@ -164,6 +167,37 @@ export default function EditarTreinoPage() {
                     />
                   </label>
                 </div>
+                {(() => {
+                  const warm = warmupCount(e.sets, e.warmup);
+                  const work = e.sets - warm;
+                  return (
+                    <div className="mt-3">
+                      <span className="mb-1 block text-xs font-medium text-muted">Séries de aquecimento</span>
+                      <Stepper
+                        tone="bg"
+                        label="Séries de aquecimento"
+                        value={warm}
+                        min={0}
+                        max={Math.max(0, e.sets - 1)}
+                        onChange={(v) =>
+                          patch((r) => ({
+                            ...r,
+                            exercises: r.exercises.map((x) =>
+                              x.id === e.id ? { ...x, warmup: warmupCount(x.sets, v) } : x
+                            ),
+                          }))
+                        }
+                      />
+                      <p className="mt-1.5 text-sm text-muted">
+                        {warm === 0
+                          ? `Sem aquecimento: as ${e.sets} ${e.sets === 1 ? "série é" : "séries são"} de trabalho.`
+                          : `${warm} ${warm === 1 ? "série" : "séries"} de aquecimento e ${work} de trabalho${
+                              e.reps.trim() ? ` (${e.reps.trim()} repetições)` : ""
+                            }.`}
+                      </p>
+                    </div>
+                  );
+                })()}
                 <div className="mt-3 flex justify-end gap-1">
                   <button
                     type="button"
